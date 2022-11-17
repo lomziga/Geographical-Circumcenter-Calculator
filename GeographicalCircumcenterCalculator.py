@@ -48,11 +48,24 @@ circumsphereCenter = ((np.linalg.norm(ac)**2 * np.cross(abXac, ab) + np.linalg.n
 circumsphereRadius = np.linalg.norm(circumsphereCenter)
 
 #Circumcenter of the triangle in R^3
-circumcenter = pointA + circumsphereCenter
+circumcenter = pointA + circumsphereCenter #Ending point B
+
+#Directional vector from center of the sphere to circumcenter
+sphereCenter = np. array([0, 0, 0]) #Starting point A
+vectorSC = circumcenter - sphereCenter #Vector v
+
+#Distance from center of the sphere to triangle circumcenter in kilometers
+distanceSC = np.linalg.norm(vectorSC)
+
+#Amount we need to move our point (as %) to reach the surface of the sphere 
+amountToMove = r / distanceSC
+
+#Circumcenter projected, from the triangle plane on to the surface of the sphere, with vector from sphere origin through triangle circumcenter
+circumcenterProjected = sphereCenter + amountToMove * vectorSC
 
 #Convert back from ECEF to latitude and longitude
-latCircumcenter = math.degrees(math.asin(circumcenter[2]/r))
-longCircumcenter = math.degrees(math.atan2(circumcenter[1], circumcenter[0]))
+latCircumcenter = math.degrees(math.asin(circumcenterProjected[2]/r))
+longCircumcenter = math.degrees(math.atan2(circumcenterProjected[1], circumcenterProjected[0]))
 
 #Calculate the distance on a great circle form one point to another
 #In our case we want find the distance from each point to the circumcenter
@@ -60,14 +73,13 @@ def haversine(lat1, long1, lat2, long2):
     #Latitude and longitude must be converted to radians
     long1, lat1, long2, lat2 = map(radians, [long1, lat1, long2, lat2])
 
-    #Haversine formula 
+    #Haversine formula
     dlong = long2 - long1
     dlat = lat2 - lat1
     a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlong/2)**2
     d = 2 * asin(sqrt(a))
     return d * r
 
-#Apparently not working best on longer distances
 print("Circumcenter coordinates:", latCircumcenter,",", longCircumcenter)
 print("Point A to circumcenter:", haversine(latA, longA, latCircumcenter, longCircumcenter), "kilometers")
 print("Point B to circumcenter:", haversine(latB, longB, latCircumcenter, longCircumcenter), "kilometers")
